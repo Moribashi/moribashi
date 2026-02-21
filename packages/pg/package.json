@@ -20,6 +20,14 @@
   "files": [
     "dist"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Moribashi/moribashi.git",
+    "directory": "packages/pg"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
   "scripts": {
     "build": "tsup",
     "clean": "rm -rf dist",

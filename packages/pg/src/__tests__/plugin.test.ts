@@ -96,8 +96,10 @@ describe('pgPlugin', () => {
     beforeEach(async () => {
       tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'pg-plugin-mig-'));
       cleanupKnex = createKnex(pgOpts);
-      // ensure clean state
+      // ensure clean state — drop any leftover migration tracking tables
       await cleanupKnex.raw('DROP TABLE IF EXISTS plugin_mig_test');
+      await cleanupKnex.raw('DROP TABLE IF EXISTS knex_migrations');
+      await cleanupKnex.raw('DROP TABLE IF EXISTS knex_migrations_lock');
     });
 
     afterEach(async () => {
