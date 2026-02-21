@@ -10,6 +10,7 @@
     "@moribashi/common": "workspace:*",
     "@moribashi/core": "workspace:*",
     "@moribashi/cli": "workspace:*",
+    "@moribashi/pg": "workspace:*",
     "@moribashi/web": "workspace:*"
   },
   "devDependencies": {

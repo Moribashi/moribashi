@@ -1,0 +1,51 @@
+{
+  "name": "@moribashi/pg",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "clean": "rm -rf dist",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@moribashi/core": "workspace:*",
+    "camelcase-keys": "^10.0.2",
+    "fastify-plugin": "^5.1.0",
+    "knex": "^3.1.0",
+    "pg": "^8.18.0"
+  },
+  "peerDependencies": {
+    "fastify": "^5.0.0"
+  },
+  "peerDependenciesMeta": {
+    "fastify": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@types/camelcase-keys": "^5.1.5",
+    "@types/node": "^25.3.0",
+    "@types/pino": "^7.0.5",
+    "@types/semver": "^7.7.1",
+    "fastify": "^5.7.4",
+    "vitest": "^4.0.18"
+  }
+}

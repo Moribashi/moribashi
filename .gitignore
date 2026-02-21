@@ -19,3 +19,6 @@ dist/
 .env
 .env.*
 !.env.example
+
+.devcontainer/data
+.pnpm-store

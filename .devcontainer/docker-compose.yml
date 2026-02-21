@@ -1,0 +1,31 @@
+name: moribashi
+services:
+  moribashi-dev:
+    container_name: moribashi-dev
+    stdin_open: true
+    tty: true
+    build:
+      context: "../"
+      dockerfile: ".devcontainer/Dockerfile.devcontainer"
+    environment:
+      SHELL: /bin/bash
+    # ports:
+    #   - 6330:6330
+    volumes:
+      # - /var/run/docker.sock:/var/run/docker.sock
+      - ../:/workspace:rw
+      
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: moribashi
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: moribashi
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U moribashi"]
+      interval: 10s
+      timeout: 5s
+      retries: 5

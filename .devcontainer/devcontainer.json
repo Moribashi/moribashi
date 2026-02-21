@@ -1,0 +1,46 @@
+{
+	"name": "moribashi",
+	"dockerComposeFile": "./docker-compose.yml",
+	"service": "moribashi-dev",
+	"workspaceFolder": "/workspace",
+	"shutdownAction": "stopCompose",
+	"overrideCommand": true,
+	"remoteUser": "node",
+	"updateRemoteUserUID": true,
+	"postCreateCommand": "direnv allow",
+	"mounts": [
+		// "source=${localEnv:HOME}/Library/Application Support/Code/User/settings.json,target=/home/node/.vscode-server/data/User/settings.json,type=bind",
+		// "source=${localEnv:HOME}/Library/Application Support/Code/User/keybindings.json,target=/home/node/.vscode-server/data/User/keybindings.json,type=bind",
+		// "source=${localEnv:HOME}/Library/Application Support/Code/User/snippets,target=/home/node/.vscode-server/data/User/snippets,type=bind",
+		"source=${localEnv:HOME}/.devcontainers/mount/oss/claude,target=/home/node/.claude,type=bind",
+		// "source=dev-container-vscode,target=/home/node/.vscode-server,type=volume"
+	],
+	"containerEnv": {
+		"POD_NAME": "local",
+		"LANE": "local"
+	},
+	"customizations": {
+		"vscode": {
+			"settings": {
+				"terminal.integrated.defaultProfile.linux": "bash",
+				"remote.autoForwardPorts": true,
+				"remote.autoForwardPortsSource": "process",
+				"editor.formatOnSave": true,
+				"editor.defaultFormatter": "biomejs.biome",
+				"editor.codeActionsOnSave": {
+					"source.fixAll.biome": true
+				},
+				"biome.lspBin": "node_modules/@biomejs/biome/bin/biome"
+			},
+			"extensions": [
+				"biomejs.biome",
+				"streetsidesoftware.code-spell-checker",
+				"openai.chatgpt",
+				"anthropic.claude-code",
+				"apollographql.vscode-apollo",
+				"OpenTofu.vscode-opentofu",
+				"Rubymaniac.vscode-direnv"
+			]
+		}
+	}
+}

@@ -1,4 +1,5 @@
 import { createApp } from '@moribashi/core';
+import { pgPlugin } from '@moribashi/pg';
 import { webPlugin } from '@moribashi/web';
 import type { FastifyInstance } from '@moribashi/web';
 import path from 'node:path';
@@ -12,6 +13,12 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const app = createApp();
 
+app.use(pgPlugin({
+  host: 'postgres',
+  user: 'moribashi',
+  password: 'password',
+  database: 'moribashi',
+}));
 app.use(webPlugin({ port: 3000 }));
 
 await app.scan(['**/*.repo.ts', '**/*.svc.ts'], { cwd: __dirname });

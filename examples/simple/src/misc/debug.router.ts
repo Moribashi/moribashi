@@ -2,6 +2,7 @@ import type { FastifyInstance } from '@moribashi/web';
 import { diagnostics as commonDiagnostics } from '@moribashi/common';
 import { diagnostics as coreDiagnostics } from '@moribashi/core';
 import { diagnostics as cliDiagnostics } from '@moribashi/cli';
+import { diagnostics as pgDiagnostics } from '@moribashi/pg';
 import { diagnostics as webDiagnostics } from '@moribashi/web';
 
 export default function debugRoutes(fastify: FastifyInstance) {
@@ -10,6 +11,7 @@ export default function debugRoutes(fastify: FastifyInstance) {
       common: commonDiagnostics(),
       core: coreDiagnostics(),
       cli: cliDiagnostics(),
+      pg: pgDiagnostics(),
       web: webDiagnostics(),
     };
   });
