@@ -20,10 +20,13 @@ export default class BooksService implements OnInit, OnDestroy {
     console.log('[BooksService] destroyed');
   }
 
-  findAllWithAuthors(): BookWithAuthor[] {
-    return this.booksRepo.findAll().map((book) => ({
-      ...book,
-      author: this.authorsService.findById(book.authorId),
-    }));
+  async findAllWithAuthors(): Promise<BookWithAuthor[]> {
+    const books = await this.booksRepo.findAll();
+    return Promise.all(
+      books.map(async (book) => ({
+        ...book,
+        author: await this.authorsService.findById(book.authorId),
+      })),
+    );
   }
 }

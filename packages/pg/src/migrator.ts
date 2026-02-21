@@ -36,10 +36,15 @@ function compareVersions(a: number[], b: number[]): number {
  *
  * Down migrations are not supported — this is forward-only.
  */
+const defaultLogger: Logger = {
+  debug() {},
+  info() {},
+};
+
 export class SqlMigrationSource implements KnexMigrationSource {
   constructor(
     private dir: string = path.join(process.cwd(), 'data', 'migrations'),
-    private log: Logger
+    private log: Logger = defaultLogger,
   ) {}
 
   async getMigrations(): Promise<string[]> {

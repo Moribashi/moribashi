@@ -8,11 +8,11 @@ export default class AuthorsService {
     this.authorsRepo = authorsRepo;
   }
 
-  findAll(): Author[] {
+  findAll(): Promise<Author[]> {
     return this.authorsRepo.findAll();
   }
 
-  findById(id: number): Author | undefined {
+  findById(id: number): Promise<Author | undefined> {
     return this.authorsRepo.findById(id);
   }
 }

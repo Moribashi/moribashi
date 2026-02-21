@@ -18,6 +18,7 @@ app.use(pgPlugin({
   user: 'moribashi',
   password: 'password',
   database: 'moribashi',
+  migrationsDir: path.join(__dirname, '..', 'data', 'migrations'),
 }));
 app.use(webPlugin({ port: 3000 }));
 

@@ -1,6 +1,9 @@
-import { describe, it, expect, afterEach } from 'vitest';
+import { describe, it, expect, afterEach, beforeEach } from 'vitest';
+import fs from 'fs/promises';
+import path from 'path';
+import os from 'os';
 import { createApp } from '@moribashi/core';
-import { pgPlugin, Db } from '../index.js';
+import { pgPlugin, Db, createKnex } from '../index.js';
 import type { Knex } from 'knex';
 
 const pgOpts = {
@@ -84,5 +87,41 @@ describe('pgPlugin', () => {
     const db = app.resolve<Db>('db');
     const rows = await db.query<{ db: string }>('SELECT current_database() AS db');
     expect(rows).toEqual([{ db: 'moribashi' }]);
+  });
+
+  describe('migrationsDir', () => {
+    let tmpDir: string;
+    let cleanupKnex: Knex;
+
+    beforeEach(async () => {
+      tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'pg-plugin-mig-'));
+      cleanupKnex = createKnex(pgOpts);
+      // ensure clean state
+      await cleanupKnex.raw('DROP TABLE IF EXISTS plugin_mig_test');
+    });
+
+    afterEach(async () => {
+      await cleanupKnex.raw('DROP TABLE IF EXISTS plugin_mig_test');
+      await cleanupKnex.raw('DROP TABLE IF EXISTS knex_migrations');
+      await cleanupKnex.raw('DROP TABLE IF EXISTS knex_migrations_lock');
+      await cleanupKnex.destroy();
+      await fs.rm(tmpDir, { recursive: true, force: true });
+    });
+
+    it('runs migrations on startup when migrationsDir is provided', async () => {
+      await fs.writeFile(
+        path.join(tmpDir, 'V1.0.0__create_test.sql'),
+        'CREATE TABLE plugin_mig_test (id SERIAL PRIMARY KEY, label TEXT NOT NULL);',
+      );
+
+      app = createApp();
+      app.use(pgPlugin({ ...pgOpts, migrationsDir: tmpDir }));
+      await app.start();
+
+      const db = app.resolve<Db>('db');
+      await db.query("INSERT INTO plugin_mig_test (label) VALUES (:label)", { label: 'works' });
+      const rows = await db.query<{ label: string }>('SELECT label FROM plugin_mig_test');
+      expect(rows).toEqual([{ label: 'works' }]);
+    });
   });
 });

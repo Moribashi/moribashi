@@ -1,17 +1,19 @@
+import type { Db } from '@moribashi/pg';
 import type { Author } from './authors.domain.js';
 
-const DB: Author[] = [
-  { id: 1, name: 'Haruki Murakami' },
-  { id: 2, name: 'Banana Yoshimoto' },
-  { id: 3, name: 'Yukio Mishima' },
-];
-
 export default class AuthorsRepo {
-  findAll(): Author[] {
-    return DB;
+  private db: Db;
+
+  constructor({ db }: { db: Db }) {
+    this.db = db;
   }
 
-  findById(id: number): Author | undefined {
-    return DB.find((a) => a.id === id);
+  async findAll(): Promise<Author[]> {
+    return this.db.query<Author>('SELECT id, name FROM authors ORDER BY id');
+  }
+
+  async findById(id: number): Promise<Author | undefined> {
+    const rows = await this.db.query<Author>('SELECT id, name FROM authors WHERE id = :id', { id });
+    return rows[0];
   }
 }
