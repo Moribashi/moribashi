@@ -1,17 +1,12 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { createKnex, type Knex, Db } from '../index.js';
+import { pgOpts } from './pg-config.js';
 
 let knex: Knex;
 let db: Db;
 
 beforeAll(async () => {
-  knex = createKnex({
-    host: 'postgres',
-    port: 5432,
-    user: 'moribashi',
-    password: 'password',
-    database: 'moribashi',
-  });
+  knex = createKnex(pgOpts);
   db = new Db(knex);
 });
 

@@ -5,14 +5,8 @@ import os from 'os';
 import { createApp } from '@moribashi/core';
 import { pgPlugin, Db, createKnex } from '../index.js';
 import type { Knex } from 'knex';
+import { pgOpts, connectionString } from './pg-config.js';
 
-const pgOpts = {
-  host: 'postgres',
-  port: 5432,
-  user: 'moribashi',
-  password: 'password',
-  database: 'moribashi',
-};
 
 let app: ReturnType<typeof createApp>;
 
@@ -81,7 +75,7 @@ describe('pgPlugin', () => {
 
   it('supports connectionString config', async () => {
     app = createApp();
-    app.use(pgPlugin({ connectionString: 'postgres://moribashi:password@postgres:5432/moribashi' }));
+    app.use(pgPlugin({ connectionString }));
     await app.start();
 
     const db = app.resolve<Db>('db');

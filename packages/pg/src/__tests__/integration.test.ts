@@ -1,16 +1,11 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { createKnex, type Knex } from '../index.js';
+import { pgOpts, connectionString } from './pg-config.js';
 
 let knex: Knex;
 
 beforeAll(async () => {
-  knex = createKnex({
-    host: 'postgres',
-    port: 5432,
-    user: 'moribashi',
-    password: 'password',
-    database: 'moribashi',
-  });
+  knex = createKnex(pgOpts);
 });
 
 afterAll(async () => {
@@ -144,7 +139,7 @@ describe('integration: createKnex against real Postgres', () => {
   });
 
   it('supports connectionString config', async () => {
-    const k = createKnex({ connectionString: 'postgres://moribashi:password@postgres:5432/moribashi' });
+    const k = createKnex({ connectionString });
     try {
       const result = await k.raw('SELECT current_database() AS db');
       expect(result.rows[0].db).toBe('moribashi');
