@@ -6,6 +6,12 @@ on:
     tags: ['[0-9]*']
   pull_request:
     branches: [main]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to publish (e.g. 0.2.0)'
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -57,7 +63,7 @@ jobs:
           PGHOST: localhost
 
   publish:
-    if: startsWith(github.ref, 'refs/tags/')
+    if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
     needs: build-and-test
     runs-on: ubuntu-latest
     steps:
@@ -73,13 +79,16 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      - name: Set package versions from tag
-        run: pnpm -r exec npm version "${{ github.ref_name }}" --no-git-tag-version --allow-same-version
+      - name: Set package versions
+        run: |
+          VERSION="${{ github.event.inputs.version || github.ref_name }}"
+          echo "Publishing version: $VERSION"
+          pnpm -r exec npm version "$VERSION" --no-git-tag-version --allow-same-version
 
       - name: Build all packages
         run: pnpm run build
 
       - name: Publish to GitHub Packages
-        run: pnpm -r publish --no-git-checks
+        run: pnpm -r publish --no-git-checks --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
