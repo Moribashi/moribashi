@@ -2,7 +2,13 @@
 
 Moribashi is a lightweight TypeScript dependency injection framework built on [Awilix](https://github.com/jeffijoe/awilix). It provides composable scopes, lifecycle hooks, and a plugin system. All packages are published to GitHub Packages under the `@moribashi` scope.
 
-## Installation
+This guide is organized into phases. If your app already uses the packages from an earlier phase, skip ahead to the next one.
+
+---
+
+## Phase 1 — Core + Web + Postgres
+
+### Installation
 
 Configure `.npmrc` to pull from GitHub Packages:
 
@@ -17,8 +23,6 @@ npm install @moribashi/core @moribashi/common
 npm install @moribashi/web    # Fastify web server with per-request DI scopes
 npm install @moribashi/pg     # PostgreSQL via Knex with migrations and camelCase queries
 ```
-
-## Core Concepts
 
 ### App Lifecycle
 
@@ -98,7 +102,7 @@ export default class CacheService implements OnInit, OnDestroy {
 - **SINGLETON** (default): One instance for the app's lifetime. Resolved eagerly during `app.start()`.
 - **SCOPED**: One instance per scope (e.g., per HTTP request). Use `app.registerInScope()` to set this up.
 
-## Plugins
+### Plugins
 
 Plugins are objects with `{ name, register(app) }`. The `register` function can be sync or async:
 
@@ -118,7 +122,7 @@ export function myPlugin(config: MyConfig): MoribashiPlugin {
 }
 ```
 
-## `@moribashi/web` — Fastify Integration
+### `@moribashi/web` — Fastify Integration
 
 Wraps Fastify with per-request DI scopes. Every incoming request gets an isolated scope with `request` and `reply` available for injection:
 
@@ -152,7 +156,7 @@ app.registerInScope(WEB_REQUEST_SCOPE, {
 });
 ```
 
-## `@moribashi/pg` — PostgreSQL Integration
+### `@moribashi/pg` — PostgreSQL Integration
 
 Registers two singletons on the container:
 - `knex` — Raw Knex instance for query builder / schema operations
@@ -172,7 +176,7 @@ app.use(pgPlugin({
 }));
 ```
 
-### Connection Config
+#### Connection Config
 
 `pgPlugin()` accepts either individual params or a connection string:
 
@@ -184,7 +188,7 @@ pgPlugin({ host: 'localhost', port: 5432, user: 'postgres', password: 'pw', data
 pgPlugin({ connectionString: 'postgres://user:pass@localhost:5432/mydb' })
 ```
 
-### Db Queries
+#### Db Queries
 
 `db.query<T>()` executes raw SQL with optional named params. Rows are auto-camelCased:
 
@@ -208,7 +212,7 @@ export default class UsersRepo {
 }
 ```
 
-### SQL Migrations
+#### SQL Migrations
 
 Migrations use Flyway naming: `V<semver>__<description>.sql`. They run forward-only in version order:
 
@@ -221,7 +225,7 @@ data/migrations/
 
 Each migration runs inside a transaction. Set `migrationsDir` on `pgPlugin()` to auto-run them during `app.start()`.
 
-## Typical Project Structure
+### Typical Project Structure (Phase 1)
 
 ```
 src/
@@ -239,6 +243,155 @@ data/
     V1.0.0__create_tables.sql
 ```
 
+---
+
+## Phase 2 — Typed Scopes + GraphQL
+
+**Prerequisites:** Phase 1 complete (core, web, and pg working).
+
+Phase 2 adds two things:
+1. **Typed scopes** — `MoribashiScope<Cradle>` lets you declare what services are in a scope and get type-safe access via `.cradle`
+2. **`@moribashi/graphql`** — Mercurius-based GraphQL plugin where resolvers get the typed scope as `this`
+
+### Install
+
+```sh
+npm install @moribashi/graphql
+```
+
+### Typed Scopes
+
+`MoribashiScope` now accepts an optional `Cradle` type parameter describing what services the scope contains. The `cradle` property is an Awilix proxy that lazily resolves services on property access:
+
+```ts
+interface RequestCradle {
+  booksService: BooksService;
+  authorsService: AuthorsService;
+  request: FastifyRequest;
+  reply: FastifyReply;
+}
+
+// Create a typed scope
+const scope = app.createScope<RequestCradle>(WEB_REQUEST_SCOPE);
+
+// Typed access via cradle (lazy — resolves on property access)
+const books = await scope.cradle.booksService.findAll();
+
+// Typed resolve (infers return type from key)
+const svc = scope.resolve('booksService'); // BooksService
+
+// Untyped resolve still works (fallback overload)
+const svc2 = scope.resolve<BooksService>('booksService');
+```
+
+All existing unparameterized usage (`MoribashiScope` without a type arg) continues to work — it defaults to `MoribashiScope<object>`.
+
+### `@moribashi/graphql` — GraphQL Integration
+
+Wraps [Mercurius](https://mercurius.dev/) with per-request scope injection. Resolvers receive the scope's `cradle` as `this`, so `this.booksService` lazily resolves from the per-request scoped container.
+
+**Requires `@moribashi/web`** — the web plugin must be registered first since the graphql plugin relies on per-request scopes from `request.scope`.
+
+#### 1. Define the scope cradle type
+
+Declare what services your resolvers can access:
+
+```ts
+// src/graphql/resolvers.ts
+import type { ResolverMap } from '@moribashi/graphql';
+import type BooksService from '../books/books.svc.js';
+import type AuthorsService from '../authors/authors.svc.js';
+
+export interface RequestCradle {
+  booksService: BooksService;
+  authorsService: AuthorsService;
+}
+```
+
+#### 2. Write resolvers with typed `this`
+
+Each resolver function receives `this` bound to the scope cradle. Services resolve lazily on access:
+
+```ts
+export const resolvers: ResolverMap<RequestCradle> = {
+  Query: {
+    async books(this: RequestCradle) {
+      return this.booksService.findAllWithAuthors();
+    },
+    async authors(this: RequestCradle) {
+      return this.authorsService.findAll();
+    },
+  },
+};
+```
+
+Resolvers also receive the standard GraphQL positional args `(parent, args, context, info)` if needed.
+
+#### 3. Define the schema
+
+```ts
+// src/graphql/schema.ts
+export const schema = `
+  type Author {
+    id: Int!
+    name: String!
+  }
+
+  type Book {
+    id: Int!
+    title: String!
+    authorId: Int!
+    author: Author
+  }
+
+  type Query {
+    books: [Book!]!
+    authors: [Author!]!
+  }
+`;
+```
+
+#### 4. Wire up the plugin
+
+```ts
+import { graphqlPlugin } from '@moribashi/graphql';
+import { schema } from './graphql/schema.js';
+import { resolvers } from './graphql/resolvers.js';
+
+app.use(webPlugin({ port: 3000 }));
+app.use(graphqlPlugin({ schema, resolvers, graphiql: true }));
+```
+
+Options:
+- `schema` — GraphQL SDL string
+- `resolvers` — `ResolverMap<Cradle>` with `this`-bound resolvers
+- `graphiql` — Serve GraphiQL IDE (default: `false`). When enabled, browser requests to `GET /graphql` redirect to `/graphiql`.
+
+### Typical Project Structure (Phase 2)
+
+Adds a `graphql/` directory alongside existing domain modules:
+
+```
+src/
+  users/
+    users.domain.ts
+    users.repo.ts
+    users.svc.ts
+  orders/
+    orders.domain.ts
+    orders.repo.ts
+    orders.svc.ts
+  graphql/
+    schema.ts              # GraphQL SDL
+    resolvers.ts           # ResolverMap<Cradle> + cradle interface
+  main.ts
+data/
+  migrations/
+    V1.0.0__create_tables.sql
+```
+
+---
+
 ## Key Patterns
 
 - **No decorators** — everything is convention-based (file names, constructor param names)
@@ -246,3 +399,4 @@ data/
 - **Destructured constructor** — `constructor({ dep }: { dep: Dep })` — Awilix matches keys to container registrations
 - **Singletons by default** — use scopes only where needed (per-request isolation)
 - **`app.container`** — escape hatch to the underlying Awilix container for advanced registrations (`asValue`, `asFunction`, `asClass` with custom lifetimes)
+- **`scope.cradle`** — typed Awilix proxy for lazy service access in scoped contexts (GraphQL resolvers, request handlers)

@@ -9,12 +9,13 @@ packages/
   common/   - Shared interfaces (OnInit, OnDestroy, type guards)
   core/     - DI container, plugin system, scopes, lifecycle (depends on common + awilix)
   cli/      - CLI integration (depends on core)
+  graphql/  - GraphQL integration via Mercurius (depends on core, peer: fastify)
   web/      - Web integration (depends on core)
 examples/
-  simple/   - Demo app showing container usage with lifecycle hooks
+  simple/   - Demo app showing container usage with lifecycle hooks + GraphQL
 ```
 
-Packages have a dependency order: common → core → {cli, web}. Always build in this order.
+Packages have a dependency order: common → core → {cli, graphql, web}. Always build in this order.
 
 ## Commands
 
@@ -51,6 +52,9 @@ After modifying `packages/common/src`, rebuild it before type-checking core (cor
 - `app.stop()` disposes scopes, fires `onDestroy` in reverse init order, disposes root
 - `app.registerInScope(key, services)` stores scoped registrations; `app.createScope(key)` applies them
 - Plugins register into the one root container; scopes are opt-in for per-request/per-event isolation
+- `MoribashiScope<Cradle>` is generic — the `Cradle` type param declares what's in the scope
+- `scope.cradle` exposes the Awilix proxy; property access lazily resolves services
+- `@moribashi/graphql` wraps resolvers so `this` is the scope cradle (services resolve lazily via `this.serviceName`)
 
 ## Session State
 
