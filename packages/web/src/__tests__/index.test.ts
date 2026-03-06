@@ -84,8 +84,8 @@ describe('request scope lifecycle', () => {
     let hasRequest = false;
     let hasReply = false;
     fastify.get('/test', async (request) => {
-      hasRequest = request.scope.resolve('request') === request;
-      hasReply = request.scope.resolve('reply') != null;
+      hasRequest = request.scope!.resolve('request') === request;
+      hasReply = request.scope!.resolve('reply') != null;
       return { ok: true };
     });
 
@@ -103,8 +103,8 @@ describe('request scope lifecycle', () => {
     const disposeSpy = vi.fn();
     fastify.get('/test', async (request) => {
       // Monkey-patch dispose so we can observe it
-      const originalDispose = request.scope.dispose.bind(request.scope);
-      request.scope.dispose = async () => {
+      const originalDispose = request.scope!.dispose.bind(request.scope!);
+      request.scope!.dispose = async () => {
         disposeSpy();
         await originalDispose();
       };
@@ -123,7 +123,7 @@ describe('request scope lifecycle', () => {
 
     const scopeContainers: object[] = [];
     fastify.get('/test', async (request) => {
-      scopeContainers.push(request.scope.container);
+      scopeContainers.push(request.scope!.container);
       return { ok: true };
     });
 
@@ -136,29 +136,25 @@ describe('request scope lifecycle', () => {
 });
 
 // ---------------------------------------------------------------------------
-// 3. Scope cleanup on abort
+// 3. Scope dispose behavior
 // ---------------------------------------------------------------------------
 
-describe('scope cleanup on abort', () => {
-  it('scope is cleaned up on aborted requests', async () => {
+describe('scope dispose behavior', () => {
+  it('scope dispose is idempotent through onResponse path', async () => {
     app = createApp();
     app.use(webPlugin({ port: 0 }));
 
     const fastify = app.resolve<FastifyInstance>('fastify');
 
-    // The onRequestAbort hook is registered by the plugin.
-    // We verify it exists so that aborted requests will be cleaned up.
-    // Fastify's inject() does not simulate aborts, so we verify the hook
-    // is wired and test the dispose mechanism through the onResponse path.
-    const hooks = (fastify as any)[Symbol.for('fastify.hooks')];
-    // Fastify stores hooks internally; we can verify via a lifecycle test.
-    // Instead, let's test that dispose is idempotent (double-dispose safe).
+    // Fastify's inject() does not simulate aborted requests, so we exercise
+    // the scope dispose mechanism through the onResponse path and verify
+    // that dispose is effectively guarded against double-dispose.
     const disposeSpy = vi.fn();
 
-    fastify.get('/abort-test', async (request) => {
-      const originalDispose = request.scope.dispose.bind(request.scope);
+    fastify.get('/dispose-test', async (request) => {
+      const originalDispose = request.scope!.dispose.bind(request.scope!);
       let disposed = false;
-      request.scope.dispose = async () => {
+      request.scope!.dispose = async () => {
         if (disposed) {
           disposeSpy(); // should NOT be called if guard works
           return;
@@ -169,7 +165,7 @@ describe('scope cleanup on abort', () => {
       return { ok: true };
     });
 
-    await fastify.inject({ method: 'GET', url: '/abort-test' });
+    await fastify.inject({ method: 'GET', url: '/dispose-test' });
     // The double-dispose guard prevented re-entry
     expect(disposeSpy).not.toHaveBeenCalled();
   });
@@ -182,8 +178,8 @@ describe('scope cleanup on abort', () => {
 
     let disposeCallCount = 0;
     fastify.get('/double', async (request) => {
-      const originalDispose = request.scope.dispose.bind(request.scope);
-      request.scope.dispose = async () => {
+      const originalDispose = request.scope!.dispose.bind(request.scope!);
+      request.scope!.dispose = async () => {
         disposeCallCount++;
         await originalDispose();
         // After first dispose, set scope to undefined to simulate

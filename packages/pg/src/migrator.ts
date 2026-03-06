@@ -68,7 +68,8 @@ export class SqlMigrationSource implements KnexMigrationSource {
   async getMigration(file: string): Promise<Knex.Migration> {
     const resolvedDir = path.resolve(this.dir);
     const fullPath = path.resolve(this.dir, file);
-    if (!fullPath.startsWith(resolvedDir + '/')) {
+    const relative = path.relative(resolvedDir, fullPath);
+    if (path.isAbsolute(relative) || relative.startsWith('..')) {
       throw new Error('Invalid migration file path');
     }
     const sql = await fs.readFile(fullPath, 'utf-8');

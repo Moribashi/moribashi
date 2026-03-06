@@ -15,7 +15,7 @@ export const WEB_REQUEST_SCOPE = Symbol.for('moribashi.scope.web.request');
 
 declare module 'fastify' {
   interface FastifyRequest {
-    scope: MoribashiScope;
+    scope?: MoribashiScope;
   }
 }
 
@@ -87,13 +87,13 @@ export function webPlugin(opts?: WebPluginOptions): MoribashiPlugin {
       // Dispose request scope after response
       fastify.addHook('onResponse', async (request: FastifyRequest) => {
         await request.scope?.dispose();
-        request.scope = undefined as unknown as MoribashiScope;
+        request.scope = undefined;
       });
 
       // Dispose on aborted requests too
       fastify.addHook('onRequestAbort', async (request: FastifyRequest) => {
         await request.scope?.dispose();
-        request.scope = undefined as unknown as MoribashiScope;
+        request.scope = undefined;
       });
     },
   };

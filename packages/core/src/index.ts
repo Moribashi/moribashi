@@ -113,14 +113,22 @@ export function createApp(): MoribashiApp {
       async dispose() {
         if (disposed) return;
         disposed = true;
+        const errors: unknown[] = [];
         // Call onDestroy on scoped cached services
         for (const [, entry] of awilixScope.cache) {
           if (hasOnDestroy(entry.value)) {
-            await entry.value.onDestroy();
+            try {
+              await entry.value.onDestroy();
+            } catch (err) {
+              errors.push(err);
+            }
           }
         }
         activeScopes.delete(scope as MoribashiScope<any>);
         await awilixScope.dispose();
+        if (errors.length > 0) {
+          throw new AggregateError(errors, 'One or more errors occurred during scope dispose');
+        }
       },
       container: awilixScope,
     };
@@ -169,10 +177,15 @@ export function createApp(): MoribashiApp {
     },
     async scan(patterns, opts = {}) {
       assertMutable('scan');
+      const userFormatName = opts.formatName ?? defaultFormatName;
       await container.loadModules(patterns, {
         cwd: opts.cwd,
         esModules: true,
-        formatName: opts.formatName ?? defaultFormatName,
+        formatName: (name, descriptor) => {
+          const formatted = userFormatName(name, descriptor);
+          validateServiceName(formatted);
+          return formatted;
+        },
         resolverOptions: {
           lifetime: Lifetime.SINGLETON,
           injectionMode: InjectionMode.PROXY,
