@@ -10,12 +10,13 @@ packages/
   core/     - DI container, plugin system, scopes, lifecycle (depends on common + awilix)
   cli/      - CLI integration (depends on core)
   graphql/  - GraphQL integration via Mercurius (depends on core, peer: fastify)
+  pg/       - PostgreSQL via Knex: Db query helper, Repo/RepoQuery pattern, migrations
   web/      - Web integration (depends on core)
 examples/
   simple/   - Demo app showing container usage with lifecycle hooks + GraphQL
 ```
 
-Packages have a dependency order: common → core → {cli, graphql, web}. Always build in this order.
+Packages have a dependency order: common → core → {cli, graphql, pg, web}. Always build in this order.
 
 ## Commands
 
@@ -42,6 +43,7 @@ After modifying `packages/common/src`, rebuild it before type-checking core (cor
 - Lifecycle hooks are duck-typed (implement `onInit()`/`onDestroy()` methods)
 - Plugin interface: `{ name: string, register(app): void | Promise<void> }`
 - Named scopes use `Symbol.for('moribashi.scope.<name>')` as keys
+- SQL-file repos: extend `Repo`, declare `RepoQuery<E>` fields, call `this._autowire()` at end of constructor
 - No decorators — keep it simple, convention-based
 
 ## Architecture Notes

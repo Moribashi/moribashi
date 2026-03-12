@@ -28,3 +28,11 @@
 - `tsconfig.base.json` does NOT set `rootDir` or `outDir` — each package sets its own
 - Allows `examples/simple` to use `paths` mappings (for IDE click-through to package sources) without TS6059 errors
 - Example uses `noEmit: true` so rootDir is irrelevant for its output
+
+## Repository Pattern: Repo + RepoQuery with SQL files
+- `RepoQuery<E>` wraps a single SQL query with typed, bounds-checked access (`one`, `any`, `many`, `none`)
+- `Repo` base class auto-wires `RepoQuery` fields by reading `.sql` files from a `sql/` directory next to the repo
+- SQL file names must match the `RepoQuery` property names (e.g. `findById` → `sql/findById.sql`)
+- `_autowire()` must be called at the end of the **subclass** constructor, not in `super()` — JS class field initializers run after `super()` returns, so the `RepoQuery` fields don't exist during the base constructor
+- Keeps SQL out of TypeScript — easier to read, lint, and review separately
+- Uses `fs.readFileSync` at construction time (sync, one-time cost at startup)

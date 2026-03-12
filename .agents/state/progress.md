@@ -11,10 +11,13 @@ Foundation complete — DI container with composable scopes, lifecycle hooks, an
 - Re-exported Awilix utilities (`asClass`, `asFunction`, `asValue`, `Lifetime`) from core
 - Updated example with lifecycle hooks on `BooksService`
 - IDE click-through works via `paths` mappings in `examples/simple/tsconfig.json`
+- Implemented `RepoQuery<E>` with bounds-checked query methods (`one`, `any`, `many`, `none`) in `@moribashi/pg`
+- Implemented `Repo` base class + `autowireRepo()` for convention-based SQL-file repositories
+- Added unit tests (mocked Db) and integration tests (real Postgres + temp SQL files) for Repo/RepoQuery
+- Updated README, claude-instructions, and CLAUDE.md with Repo pattern documentation
 
 ## Next Steps
 - Build concrete scope plugins (WebContext via `@moribashi/web`, EventContext for Kafka)
 - Add scoped service lifecycle hooks (onInit/onDestroy within scopes)
-- Build a real plugin (e.g., `@moribashi/postgres`) to validate the plugin contract
-- Add tests
 - Middleware/interceptor support
+- Migrate example app repos to use `Repo`/`RepoQuery` pattern

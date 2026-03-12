@@ -10,7 +10,7 @@ Lightweight TypeScript dependency injection framework built on [Awilix](https://
 | `@moribashi/core` | DI container, plugin system, scopes, lifecycle management |
 | `@moribashi/cli` | CLI integration |
 | `@moribashi/web` | Fastify web server integration with per-request scopes |
-| `@moribashi/pg` | PostgreSQL integration via Knex with migrations and camelCase query helper |
+| `@moribashi/pg` | PostgreSQL integration via Knex with migrations, camelCase query helper, and convention-based repositories |
 
 ## Installation
 
@@ -95,6 +95,43 @@ class UsersRepo {
 ```
 
 SQL migrations use the Flyway naming convention: `V1.0.0__description.sql`.
+
+#### SQL-file Repositories
+
+For repos with many queries, use `Repo` and `RepoQuery` to keep SQL in separate `.sql` files:
+
+```ts
+import { Repo, RepoQuery, type Db } from '@moribashi/pg';
+
+interface User { id: number; fullName: string; }
+
+export default class UsersRepo extends Repo {
+  findAll   = new RepoQuery<User>();
+  findById  = new RepoQuery<User>();
+
+  constructor({ db }: { db: Db }) {
+    super(import.meta.dirname, db);
+    this._autowire();  // reads SQL files + injects db into each RepoQuery
+  }
+}
+```
+
+Place SQL files in a `sql/` directory next to the repo, named to match each property:
+
+```
+src/users/
+  users.repo.ts
+  sql/
+    findAll.sql       # SELECT id, full_name FROM users ORDER BY id
+    findById.sql      # SELECT id, full_name FROM users WHERE id = :id
+```
+
+Each `RepoQuery` exposes bounds-checked methods:
+
+```ts
+const users = await usersRepo.findAll.any();        // 0+ rows
+const user  = await usersRepo.findById.one({ id });  // exactly 1 row (throws otherwise)
+```
 
 ## Conventions
 

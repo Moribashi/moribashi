@@ -225,6 +225,60 @@ data/migrations/
 
 Each migration runs inside a transaction. Set `migrationsDir` on `pgPlugin()` to auto-run them during `app.start()`.
 
+#### SQL-file Repositories (`Repo` + `RepoQuery`)
+
+For repositories with many queries, keep SQL in separate `.sql` files instead of inline strings. The `Repo` base class and `RepoQuery` helper wire everything together automatically.
+
+**1. Define the repo class** — each `RepoQuery<E>` property maps to a `.sql` file:
+
+```ts
+// src/users/users.repo.ts
+import { Repo, RepoQuery, type Db } from '@moribashi/pg';
+import type { User } from './users.domain.js';
+
+export default class UsersRepo extends Repo {
+  findAll  = new RepoQuery<User>();
+  findById = new RepoQuery<User>();
+  search   = new RepoQuery<User>();
+
+  constructor({ db }: { db: Db }) {
+    super(import.meta.dirname, db);
+    this._autowire();  // must be called after class fields are initialized
+  }
+}
+```
+
+**2. Create SQL files** in a `sql/` directory next to the repo (configurable via the third `Repo` constructor arg):
+
+```
+src/users/
+  users.repo.ts
+  users.domain.ts
+  sql/
+    findAll.sql       # SELECT id, full_name FROM users ORDER BY id
+    findById.sql      # SELECT id, full_name FROM users WHERE id = :id
+    search.sql        # SELECT id, full_name FROM users WHERE name ILIKE :term
+```
+
+`_autowire()` reads each `.sql` file whose name matches a `RepoQuery` property and injects the `Db` instance. SQL files use Knex named params (`:paramName`).
+
+**3. Use bounds-checked query methods** — `RepoQuery` provides four methods that delegate to `Db.query()` and enforce row-count expectations:
+
+| Method | Returns | Throws when |
+|--------|---------|-------------|
+| `one(params?)` | `E` (single row) | 0 rows or >1 rows |
+| `any(params?)` | `E[]` | never (0+ is fine) |
+| `many(params?)` | `E[]` | 0 rows |
+| `none(params?)` | `void` | any rows returned |
+
+```ts
+const users = await usersRepo.findAll.any();           // 0+ rows
+const user  = await usersRepo.findById.one({ id: 1 }); // exactly 1 (throws otherwise)
+const hits  = await usersRepo.search.many({ term: '%alice%' }); // 1+ (throws if empty)
+```
+
+**Important:** `_autowire()` must be called at the end of the subclass constructor, **not** in `super()`. JavaScript class field initializers (`findAll = new RepoQuery()`) run after `super()` returns, so the fields don't exist yet when the `Repo` base constructor runs.
+
 ### Typical Project Structure (Phase 1)
 
 ```
@@ -233,10 +287,16 @@ src/
     users.domain.ts       # Interfaces/types (not registered)
     users.repo.ts          # Data access (→ usersRepo)
     users.svc.ts           # Business logic (→ usersService)
+    sql/
+      findAll.sql          # SQL per RepoQuery property
+      findById.sql
   orders/
     orders.domain.ts
     orders.repo.ts
     orders.svc.ts
+    sql/
+      findAll.sql
+      findById.sql
   main.ts                  # App setup, routes, start/stop
 data/
   migrations/

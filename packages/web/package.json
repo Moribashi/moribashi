@@ -25,10 +25,6 @@
     "url": "https://github.com/Moribashi/moribashi.git",
     "directory": "packages/web"
   },
-  "publishConfig": {
-    "registry": "https://npm.pkg.github.com",
-    "access": "public"
-  },
   "scripts": {
     "build": "tsup",
     "clean": "rm -rf dist"
