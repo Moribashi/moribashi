@@ -88,4 +88,4 @@ jobs:
         run: pnpm run build
 
       - name: Publish to npmjs
-        run: pnpm -r --filter './packages/**' exec npm publish --provenance --access public
+        run: pnpm -r --filter './packages/**' publish --access public --no-git-checks
