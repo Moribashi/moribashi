@@ -1,45 +1,8 @@
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { createApp } from '@moribashi/core';
-import { graphqlPlugin } from '@moribashi/graphql';
-import { pgPlugin } from '@moribashi/pg';
-import type { FastifyInstance } from '@moribashi/web';
-import { webPlugin } from '@moribashi/web';
-import type BooksService from './books/books.svc.js';
-import { resolvers } from './graphql/resolvers.js';
-import { schema } from './graphql/schema.js';
-import debugRoutes from './misc/debug.router.js';
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+import { buildApp } from './app.js';
 
 // --- App setup ---
 
-const app = createApp();
-
-app.use(
-  pgPlugin({
-    host: 'postgres',
-    user: 'moribashi',
-    password: 'password',
-    database: 'moribashi',
-    migrationsDir: path.join(__dirname, '..', 'data', 'migrations'),
-  }),
-);
-app.use(webPlugin({ port: 3000 }));
-app.use(graphqlPlugin({ schema, resolvers, graphiql: true }));
-
-await app.scan(['**/*.repo.ts', '**/*.svc.ts'], { cwd: __dirname });
-
-// --- Routes ---
-
-const fastify = app.resolve<FastifyInstance>('fastify');
-
-debugRoutes(fastify);
-
-fastify.get('/books', async (request) => {
-  const booksService = request.scope.resolve<BooksService>('booksService');
-  return booksService.findAllWithAuthors();
-});
+const app = await buildApp();
 
 // --- Start ---
 
