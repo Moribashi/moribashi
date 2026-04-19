@@ -1,13 +1,16 @@
-import type { OnInit, OnDestroy } from '@moribashi/common';
+import type { OnDestroy, OnInit } from '@moribashi/common';
+import type AuthorsService from '../authors/authors.svc.js';
 import type { BookWithAuthor } from './books.domain.js';
 import type BooksRepo from './books.repo.js';
-import type AuthorsService from '../authors/authors.svc.js';
 
 export default class BooksService implements OnInit, OnDestroy {
   private booksRepo: BooksRepo;
   private authorsService: AuthorsService;
 
-  constructor({ booksRepo, authorsService }: { booksRepo: BooksRepo; authorsService: AuthorsService }) {
+  constructor({
+    booksRepo,
+    authorsService,
+  }: { booksRepo: BooksRepo; authorsService: AuthorsService }) {
     this.booksRepo = booksRepo;
     this.authorsService = authorsService;
   }

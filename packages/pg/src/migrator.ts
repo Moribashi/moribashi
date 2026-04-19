@@ -1,5 +1,5 @@
-import fs from 'fs/promises';
-import path from 'path';
+import fs from 'node:fs/promises';
+import path from 'node:path';
 import type { Knex } from 'knex';
 
 export interface Logger {
@@ -48,10 +48,11 @@ export class SqlMigrationSource implements KnexMigrationSource {
   ) {}
 
   async getMigrations(): Promise<string[]> {
-    const files = (await fs.readdir(this.dir))
-      .filter(f => f.endsWith('.sql') && f.startsWith('V'));
+    const files = (await fs.readdir(this.dir)).filter(
+      (f) => f.endsWith('.sql') && f.startsWith('V'),
+    );
 
-    this.log.debug({ dir: this.dir, files}, 'Loading migrations')
+    this.log.debug({ dir: this.dir, files }, 'Loading migrations');
     files.sort((a, b) => compareVersions(parseVersion(a), parseVersion(b)));
 
     return files;
@@ -63,10 +64,10 @@ export class SqlMigrationSource implements KnexMigrationSource {
 
   async getMigration(file: string): Promise<Knex.Migration> {
     const sql = await fs.readFile(path.join(this.dir, file), 'utf-8');
-    this.log.debug({ dir: this.dir, file, sql }, 'Loaded migration')
+    this.log.debug({ dir: this.dir, file, sql }, 'Loaded migration');
 
     return {
-      up: async (knex: Knex) => knex.transaction(trx => trx.raw(sql)),
+      up: async (knex: Knex) => knex.transaction((trx) => trx.raw(sql)),
       down: async () => {
         throw new Error(`Down migration not supported for ${file}`);
       },

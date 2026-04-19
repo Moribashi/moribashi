@@ -19,6 +19,8 @@ RUN mkdir -p /home/node/.vscode-server/data/Machine \
 
 USER node
 
+RUN npm install -g @anthropic-ai/claude-code
+
 WORKDIR /workspace
 
 CMD [ "node", "src/main.ts" ]

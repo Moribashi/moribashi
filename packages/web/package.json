@@ -27,11 +27,15 @@
   },
   "scripts": {
     "build": "tsup",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
     "@moribashi/common": "workspace:*",
     "@moribashi/core": "workspace:*",
     "fastify": "^5.7.4"
+  },
+  "devDependencies": {
+    "vitest": "^4.1.4"
   }
 }

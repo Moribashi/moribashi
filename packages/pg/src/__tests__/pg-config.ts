@@ -8,5 +8,4 @@ export const pgOpts = {
   database: process.env.PGDATABASE ?? 'moribashi',
 };
 
-export const connectionString =
-  `postgres://${pgOpts.user}:${pgOpts.password}@${pgOpts.host}:${pgOpts.port}/${pgOpts.database}`;
+export const connectionString = `postgres://${pgOpts.user}:${pgOpts.password}@${pgOpts.host}:${pgOpts.port}/${pgOpts.database}`;

@@ -1,8 +1,8 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import fs from 'fs/promises';
-import path from 'path';
-import os from 'os';
-import { SqlMigrationSource, type Logger } from '../migrator.js';
+import fs from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { type Logger, SqlMigrationSource } from '../migrator.js';
 
 let tmpDir: string;
 const log: Logger = {
@@ -34,10 +34,7 @@ describe('SqlMigrationSource', () => {
       const source = new SqlMigrationSource(tmpDir, log);
       const migrations = await source.getMigrations();
 
-      expect(migrations).toEqual([
-        'V1.0.0__init.sql',
-        'V1.1.0__add_users.sql',
-      ]);
+      expect(migrations).toEqual(['V1.0.0__init.sql', 'V1.1.0__add_users.sql']);
     });
 
     it('sorts by semver version', async () => {
@@ -65,11 +62,7 @@ describe('SqlMigrationSource', () => {
       const source = new SqlMigrationSource(tmpDir, log);
       const migrations = await source.getMigrations();
 
-      expect(migrations).toEqual([
-        'V1.0__init.sql',
-        'V1.1__first.sql',
-        'V2.0__next.sql',
-      ]);
+      expect(migrations).toEqual(['V1.0__init.sql', 'V1.1__first.sql', 'V2.0__next.sql']);
     });
 
     it('handles single-part versions', async () => {
@@ -80,11 +73,7 @@ describe('SqlMigrationSource', () => {
       const source = new SqlMigrationSource(tmpDir, log);
       const migrations = await source.getMigrations();
 
-      expect(migrations).toEqual([
-        'V1__first.sql',
-        'V2__second.sql',
-        'V3__third.sql',
-      ]);
+      expect(migrations).toEqual(['V1__first.sql', 'V2__second.sql', 'V3__third.sql']);
     });
 
     it('returns empty array when no migrations exist', async () => {
@@ -132,7 +121,13 @@ describe('SqlMigrationSource', () => {
       const migration = await source.getMigration('V1.0.0__init.sql');
 
       const rawResult = { rows: [] };
-      const trx = { raw: (sql: string) => { trx._sql = sql; return rawResult; }, _sql: '' };
+      const trx = {
+        raw: (sql: string) => {
+          trx._sql = sql;
+          return rawResult;
+        },
+        _sql: '',
+      };
       const knex = { transaction: (fn: (trx: unknown) => unknown) => fn(trx) } as any;
 
       const result = await migration.up(knex);

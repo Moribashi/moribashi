@@ -1,10 +1,17 @@
+import type { OnDestroy, OnInit } from '@moribashi/common';
+import {
+  asClass,
+  asValue,
+  Lifetime,
+  type MoribashiApp,
+  type MoribashiPlugin,
+  type MoribashiScope,
+} from '@moribashi/core';
+import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import Fastify from 'fastify';
-import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
-import { asClass, asValue, Lifetime, type MoribashiApp, type MoribashiPlugin, type MoribashiScope } from '@moribashi/core';
-import type { OnInit, OnDestroy } from '@moribashi/common';
 
 // Re-export Fastify types for downstream consumers
-export type { FastifyInstance, FastifyRequest, FastifyReply };
+export type { FastifyInstance, FastifyReply, FastifyRequest };
 
 // --- Scope symbols ---
 

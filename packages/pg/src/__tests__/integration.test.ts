@@ -1,6 +1,6 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createKnex, type Knex } from '../index.js';
-import { pgOpts, connectionString } from './pg-config.js';
+import { connectionString, pgOpts } from './pg-config.js';
 
 let knex: Knex;
 

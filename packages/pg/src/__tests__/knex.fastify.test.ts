@@ -1,6 +1,6 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import Fastify from 'fastify';
 import type { FastifyInstance } from 'fastify';
+import Fastify from 'fastify';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Mock knex — we don't want real pg connections
 const mockDestroy = vi.fn().mockResolvedValue(undefined);

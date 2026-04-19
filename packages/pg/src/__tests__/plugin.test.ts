@@ -1,12 +1,11 @@
-import { describe, it, expect, afterEach, beforeEach } from 'vitest';
-import fs from 'fs/promises';
-import path from 'path';
-import os from 'os';
+import fs from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
 import { createApp } from '@moribashi/core';
-import { pgPlugin, Db, createKnex } from '../index.js';
 import type { Knex } from 'knex';
-import { pgOpts, connectionString } from './pg-config.js';
-
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { createKnex, Db, pgPlugin } from '../index.js';
+import { connectionString, pgOpts } from './pg-config.js';
 
 let app: ReturnType<typeof createApp>;
 
@@ -42,10 +41,9 @@ describe('pgPlugin', () => {
     await app.start();
 
     const db = app.resolve<Db>('db');
-    const rows = await db.query<{ greeting: string }>(
-      "SELECT 'hello ' || :name AS greeting",
-      { name: 'world' },
-    );
+    const rows = await db.query<{ greeting: string }>("SELECT 'hello ' || :name AS greeting", {
+      name: 'world',
+    });
     expect(rows).toEqual([{ greeting: 'hello world' }]);
   });
 
@@ -115,7 +113,7 @@ describe('pgPlugin', () => {
       await app.start();
 
       const db = app.resolve<Db>('db');
-      await db.query("INSERT INTO plugin_mig_test (label) VALUES (:label)", { label: 'works' });
+      await db.query('INSERT INTO plugin_mig_test (label) VALUES (:label)', { label: 'works' });
       const rows = await db.query<{ label: string }>('SELECT label FROM plugin_mig_test');
       expect(rows).toEqual([{ label: 'works' }]);
     });

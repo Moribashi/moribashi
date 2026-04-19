@@ -13,6 +13,9 @@ export default class BooksRepo {
   }
 
   async findByAuthorId(authorId: number): Promise<Book[]> {
-    return this.db.query<Book>('SELECT id, title, author_id FROM books WHERE author_id = :authorId ORDER BY id', { authorId });
+    return this.db.query<Book>(
+      'SELECT id, title, author_id FROM books WHERE author_id = :authorId ORDER BY id',
+      { authorId },
+    );
   }
 }

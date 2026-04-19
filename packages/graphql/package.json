@@ -27,14 +27,18 @@
   },
   "scripts": {
     "build": "tsup",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
     "@moribashi/core": "workspace:*",
-    "mercurius": "^15.0.0",
-    "graphql": "^16.0.0"
+    "graphql": "^16.0.0",
+    "mercurius": "^15.0.0"
   },
   "peerDependencies": {
     "fastify": "^5.0.0"
+  },
+  "devDependencies": {
+    "vitest": "^4.1.4"
   }
 }

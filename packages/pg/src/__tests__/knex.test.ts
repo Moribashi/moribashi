@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, afterEach } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createKnex, type PgConfig } from '../knex.js';
 
 // Mock the knex module — we don't want real pg connections
@@ -7,6 +7,7 @@ vi.mock('knex', () => ({
 }));
 
 import knex from 'knex';
+
 const knexMock = vi.mocked(knex);
 
 afterEach(() => {

@@ -1,5 +1,12 @@
-import { describe, it, expect } from 'vitest';
-import { diagnostics, createKnex, SqlMigrationSource, fastifyKnex, Db, pgPlugin } from '../index.js';
+import { describe, expect, it } from 'vitest';
+import {
+  createKnex,
+  Db,
+  diagnostics,
+  fastifyKnex,
+  pgPlugin,
+  SqlMigrationSource,
+} from '../index.js';
 
 describe('index re-exports', () => {
   it('exports diagnostics', () => {

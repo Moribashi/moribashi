@@ -1,7 +1,7 @@
 import fp from 'fastify-plugin';
 import type { Knex } from 'knex';
 import { createKnex, type PgConfig } from './knex.js';
-import { SqlMigrationSource, type Logger } from './migrator.js';
+import { type Logger, SqlMigrationSource } from './migrator.js';
 
 export interface KnexPluginOptions extends PgConfig {
   /** Decorator name on the Fastify instance. Defaults to `'knex'`. */

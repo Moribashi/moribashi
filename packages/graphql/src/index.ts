@@ -1,5 +1,5 @@
-import type { FastifyInstance } from 'fastify';
 import type { MoribashiApp, MoribashiPlugin, MoribashiScope } from '@moribashi/core';
+import type { FastifyInstance } from 'fastify';
 import mercurius from 'mercurius';
 
 // --- Scope symbols ---
@@ -86,9 +86,7 @@ export function bindResolvers<Cradle extends object>(
 export async function scopeContext(request: any): Promise<{ scope: MoribashiScope }> {
   const scope = request.scope as MoribashiScope | undefined;
   if (!scope) {
-    throw new Error(
-      '@moribashi/graphql requires @moribashi/web to be registered first',
-    );
+    throw new Error('@moribashi/graphql requires @moribashi/web to be registered first');
   }
   return { scope };
 }

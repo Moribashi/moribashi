@@ -4,17 +4,19 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "start": "tsx src/main.ts"
+    "start": "tsx src/main.ts",
+    "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
+    "@moribashi/cli": "workspace:*",
     "@moribashi/common": "workspace:*",
     "@moribashi/core": "workspace:*",
-    "@moribashi/cli": "workspace:*",
-    "@moribashi/pg": "workspace:*",
     "@moribashi/graphql": "workspace:*",
+    "@moribashi/pg": "workspace:*",
     "@moribashi/web": "workspace:*"
   },
   "devDependencies": {
-    "tsx": "^4.19.0"
+    "tsx": "^4.19.0",
+    "vitest": "^4.1.4"
   }
 }

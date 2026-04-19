@@ -1,6 +1,6 @@
 import type { ResolverMap } from '@moribashi/graphql';
-import type BooksService from '../books/books.svc.js';
 import type AuthorsService from '../authors/authors.svc.js';
+import type BooksService from '../books/books.svc.js';
 
 export interface RequestCradle {
   booksService: BooksService;

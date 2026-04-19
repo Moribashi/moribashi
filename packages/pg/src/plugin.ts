@@ -1,6 +1,12 @@
-import { asValue, asFunction, Lifetime, type MoribashiApp, type MoribashiPlugin } from '@moribashi/core';
-import { createKnex, type PgConfig } from './knex.js';
+import {
+  asFunction,
+  asValue,
+  Lifetime,
+  type MoribashiApp,
+  type MoribashiPlugin,
+} from '@moribashi/core';
 import { Db } from './db.js';
+import { createKnex, type PgConfig } from './knex.js';
 import { SqlMigrationSource } from './migrator.js';
 
 export interface PgPluginOptions extends PgConfig {

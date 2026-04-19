@@ -1,5 +1,14 @@
-import { createContainer, asClass, asFunction, asValue, Lifetime, InjectionMode, type AwilixContainer, type Resolver } from 'awilix';
-import { hasOnInit, hasOnDestroy } from '@moribashi/common';
+import { hasOnDestroy, hasOnInit } from '@moribashi/common';
+import {
+  type AwilixContainer,
+  asClass,
+  asFunction,
+  asValue,
+  createContainer,
+  InjectionMode,
+  Lifetime,
+  type Resolver,
+} from 'awilix';
 
 export type { AwilixContainer };
 export { asClass, asFunction, asValue, Lifetime };
@@ -36,7 +45,10 @@ export interface MoribashiApp {
   resolve<T>(name: string): T;
   scan(patterns: string[], opts?: ScanOptions): Promise<MoribashiApp>;
   use(plugin: MoribashiPlugin): MoribashiApp;
-  registerInScope(scopeKey: symbol, services: Record<string, new (...args: any[]) => any>): MoribashiApp;
+  registerInScope(
+    scopeKey: symbol,
+    services: Record<string, new (...args: any[]) => any>,
+  ): MoribashiApp;
   createScope<ScopeCradle extends object = object>(scopeKey?: symbol): MoribashiScope<ScopeCradle>;
   start(): Promise<void>;
   stop(): Promise<void>;
@@ -55,7 +67,9 @@ export function createApp(): MoribashiApp {
   const initializedServices: Array<{ name: string; instance: unknown }> = [];
   let started = false;
 
-  function createMoribashiScope<Cradle extends object = object>(awilixScope: AwilixContainer<Cradle>): MoribashiScope<Cradle> {
+  function createMoribashiScope<Cradle extends object = object>(
+    awilixScope: AwilixContainer<Cradle>,
+  ): MoribashiScope<Cradle> {
     const scope: MoribashiScope<Cradle> = {
       resolve(name: string): any {
         return awilixScope.resolve(name);

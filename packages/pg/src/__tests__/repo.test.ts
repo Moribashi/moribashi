@@ -1,8 +1,8 @@
-import { describe, it, expect, vi, beforeAll, afterAll } from 'vitest';
-import fs from 'fs/promises';
-import path from 'path';
-import os from 'os';
-import { RepoQuery, Repo, Db, createKnex, type Knex } from '../index.js';
+import fs from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
+import { createKnex, Db, type Knex, Repo, RepoQuery } from '../index.js';
 import { pgOpts } from './pg-config.js';
 
 /* ------------------------------------------------------------------ */
@@ -132,10 +132,7 @@ describe('Repo + autowireRepo', () => {
       t.increments('id');
       t.text('label').notNullable();
     });
-    await knex('repo_test_widgets').insert([
-      { label: 'alpha' },
-      { label: 'beta' },
-    ]);
+    await knex('repo_test_widgets').insert([{ label: 'alpha' }, { label: 'beta' }]);
 
     // Create temp dir with SQL files
     tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'repo-test-'));
@@ -182,9 +179,7 @@ describe('Repo + autowireRepo', () => {
 
   it('one() throws when no matching row', async () => {
     const repo = new WidgetRepo(db, tmpDir);
-    await expect(repo.findById.one({ id: 999 })).rejects.toThrow(
-      'Expected exactly one row, got 0',
-    );
+    await expect(repo.findById.one({ id: 999 })).rejects.toThrow('Expected exactly one row, got 0');
   });
 
   it('many() returns rows', async () => {

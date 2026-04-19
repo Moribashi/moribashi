@@ -27,10 +27,14 @@
   },
   "scripts": {
     "build": "tsup",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
     "@moribashi/common": "workspace:*",
     "awilix": "^12.1.0"
+  },
+  "devDependencies": {
+    "vitest": "^4.1.4"
   }
 }

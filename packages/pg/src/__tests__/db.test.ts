@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { createKnex, type Knex, Db } from '../index.js';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { createKnex, Db, type Knex } from '../index.js';
 import { pgOpts } from './pg-config.js';
 
 let knex: Knex;
@@ -21,17 +21,14 @@ describe('Db', () => {
   });
 
   it('supports named params', async () => {
-    const rows = await db.query<{ greeting: string }>(
-      "SELECT 'hello ' || :name AS greeting",
-      { name: 'Heisenberg' },
-    );
+    const rows = await db.query<{ greeting: string }>("SELECT 'hello ' || :name AS greeting", {
+      name: 'Heisenberg',
+    });
     expect(rows).toEqual([{ greeting: 'hello Heisenberg' }]);
   });
 
   it('camelCases column names by default', async () => {
-    const rows = await db.query<{ myValue: number }>(
-      'SELECT 42 AS my_value',
-    );
+    const rows = await db.query<{ myValue: number }>('SELECT 42 AS my_value');
     expect(rows).toEqual([{ myValue: 42 }]);
   });
 
@@ -55,9 +52,7 @@ describe('Db', () => {
   });
 
   it('returns multiple rows in order', async () => {
-    const rows = await db.query<{ n: number }>(
-      'SELECT generate_series(1, 3) AS n',
-    );
+    const rows = await db.query<{ n: number }>('SELECT generate_series(1, 3) AS n');
     expect(rows).toEqual([{ n: 1 }, { n: 2 }, { n: 3 }]);
   });
 });
